@@ -1,0 +1,205 @@
+---
+title: "Serie storiche utilizzo parole"
+output:
+   html_document:
+    theme: united
+    highlight: tango
+    css: prova1.css
+    includes: 
+        before_body: header.html
+runtime: shiny
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<center>
+```{r echo=FALSE,message=FALSE, warning=FALSE}
+library(rtweet)
+library(twitteR)
+library(devtools)
+library("httr")
+library("base64enc")
+library(lubridate)
+library(dplyr)
+library(tidyverse)
+library(readr)
+library(tidytext)
+library(stringr)
+library(tokenizers)
+library(purrr)
+library(broom)
+library(plotly)
+library(tweenr)
+#devtools::install_github('thomasp85/gganimate')
+library(gganimate)
+library(wordcloud)
+library(shiny)
+library(shinyWidgets)
+
+Salvinifinale <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/Salvinifinaledef.csv")
+Salvini <- Salvinifinale %>%
+  filter(created_at >= as.Date("2016-12-31"),created_at <= as.Date("2019-01-01"))
+stopwords <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/stopwords2.txt", 
+                       col_names = "words")
+remove_reg <- "&amp;|&lt;|&gt;"
+# tweets <-  Salvini %>% 
+#   filter(!str_detect(text, "^RT"), is_retweet == F) %>%
+#   mutate(text = str_remove_all(text, remove_reg)) %>%
+#   unnest_tokens(word, text, token = "tweets") %>%
+#   filter(!word %in% stopwords$words,
+#          !word %in% str_remove_all(stopwords$words, "'"),
+#          str_detect(word, "[a-z]")) %>% mutate(word=str_remove(word,"#"))
+
+
+DiMaiotweets <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/DiMaiotweetsdef.csv")
+
+Berlusconitweets <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/Berlusconitweetsdef.csv")
+
+MRenzitweets <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/MRenzitweetsdef.csv")
+
+Renzi <- MRenzitweets %>%
+  filter(created_at >= as.Date("2016-12-31"),created_at <= as.Date("2019-01-01"))
+
+Berlusconi <- Berlusconitweets %>% 
+  filter(created_at >= as.Date("2016-12-31"),created_at <= as.Date("2019-01-01"))
+
+DiMaio <- DiMaiotweets %>%
+  filter(created_at >= as.Date("2016-12-31"), created_at <= as.Date("2019-01-01"))
+
+Grassotweets <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/Grassotweetsdef.csv")
+
+Melonitweets <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/Melonitweetsdef.csv")
+
+Martinatweets <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/Martinatweetsdef.csv")
+
+Grillotweets <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/Grillofinaledef.csv")
+
+Grillo <- Grillotweets %>%
+  filter(created_at > as.Date("2016-12-31"),created_at <= as.Date("2019-01-01"))
+
+Grasso <- Grassotweets %>%
+  filter(created_at >= as.Date("2016-12-31"),created_at <= as.Date("2019-01-01"))
+
+Meloni <- Melonitweets %>%
+  filter(created_at >= as.Date("2016-12-31"),created_at <= as.Date("2019-01-01"))
+
+Martina <- Martinatweets %>%
+  filter(created_at >= as.Date("2016-12-31"),created_at <= as.Date("2019-01-01"))
+
+Grillo$quoted_created_at <- Grillo$quoted_created_at %>% as.Date(origin)
+Grillo$quoted_created_at <- Grillo$quoted_created_at %>% as.POSIXct()
+Grillo$quoted_favorite_count <- Grillo$quoted_favorite_count %>% as.integer()
+
+Grillo$quoted_retweet_count <- Grillo$quoted_retweet_count %>% as.integer()
+
+Grillo$quoted_followers_count <- Grillo$quoted_followers_count %>% as.integer()
+
+Grillo$quoted_friends_count <- Grillo$quoted_friends_count %>% as.integer()
+
+Grillo$quoted_statuses_count <- Grillo$quoted_statuses_count %>% as.integer()
+
+Grillo$quoted_verified <- Grillo$quoted_verified %>% as.logical()
+
+tweets <- bind_rows(DiMaio %>% 
+                      mutate(Politico = "DiMaio"),
+                    Berlusconi %>% 
+                      mutate(Politico = "Berlusconi"),
+                    Renzi %>% 
+                      mutate(Politico = "Renzi"),
+                    Salvini %>% 
+                      mutate(Politico = "Salvini"),
+                    Grasso %>% 
+                      mutate(Politico = "Grasso"),
+                    Grillo %>% 
+                      mutate(Politico = "Grillo"),
+                    Martina %>% 
+                      mutate(Politico = "Martina"),
+                    Meloni %>% 
+                      mutate(Politico = "Meloni"))
+remove_reg <- "&amp;|&lt;|&gt;"
+
+tidy_tweets <- tweets %>% 
+  filter(!str_detect(text, "^RT"), is_retweet==F) %>%
+  mutate(text = str_remove_all(text, remove_reg)) %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stopwords$words,
+         !word %in% str_remove_all(stopwords$words, "'"),
+         str_detect(word, "[a-z]"))
+
+tidy_tweets <- tidy_tweets %>% 
+  mutate(word=str_remove(word,"#"))
+
+p <- tidy_tweets %>%
+  filter(!str_detect(word, "^@")) %>%
+  mutate(time_floor = floor_date(created_at, unit = "1 month")) %>%
+  count(time_floor, Politico, word) %>%
+  group_by(Politico, time_floor) %>%
+  mutate(time_total = sum(n)) %>%
+  group_by(Politico, word) %>%
+  mutate(word_total = sum(n)) %>%
+  ungroup() %>%
+  rename(count = n)
+colori <- data.frame("Politico"="","Colore"="")
+colori$Politico <- as.character(colori$Politico)
+colori$Colore <- as.character(colori$Colore)
+
+colori[1,"Politico"] <- "Salvini"
+colori[2,"Politico"] <- "Renzi"
+colori[3,"Politico"] <- "DiMaio"
+colori[4,"Politico"] <- "Berlusconi"
+colori[5,"Politico"] <- "Meloni"
+colori[6,"Politico"] <- "Grasso"
+colori[7,"Politico"] <- "Grillo"
+colori[8,"Politico"] <- "Martina"
+
+colori[1,"Colore"] <- "#009933"
+colori[2,"Colore"] <- "#ff8080"
+colori[3,"Colore"] <- "#ffcc00"
+colori[4,"Colore"] <- "#66ccff"
+colori[5,"Colore"] <- "#0000ff"
+colori[6,"Colore"] <- "#cc0000"
+colori[7,"Colore"] <- "#ac8a00"
+colori[8,"Colore"] <- "#ffb3b3"
+nomi <- unique(p$Politico)
+options("scipen" = 1000)
+shinyApp(
+  ui = fluidPage(
+   
+      textInput("text", label = h3("Inserire parola"), value = "lavoro"),
+      setBackgroundColor("#fff3e6"),
+    plotlyOutput("gg")
+  ),
+  server = function(input, output) {
+  output$gg =renderPlotly({
+    validate(
+      #need(input$text ,"Inserire una parola per visualizzarne l'utilizzo" ),
+      need(tolower(input$text) %in% (p%>%filter(Politico %in% c("DiMaio","Renzi","Salvini","Berlusconi")))$word ,"Inserire una parola valida" )
+    )
+  a <- as.vector("")
+j <- 1
+for (i in nomi) {
+  if(tolower(input$text) %in% (p %>% filter(Politico== i))$word) {
+   a[j] <- i 
+   j <- j +1 
+  }
+}
+gg <- plot_ly(data= p,x = ~time_floor)
+v <- ""
+for (i in a) {
+  if(i %in% c("Meloni","Grillo","Martina","Grasso")){
+    v = "legendonly"
+  } else v= T 
+gg <- gg %>%  add_lines(data= as.data.frame(p%>%filter(word %in% tolower(input$text))%>%filter(Politico==i)), y = ~count/time_total , line = list(color = colori[which(colori$Politico==i),"Colore"], width = 2),name=i, visible=v) 
+}
+gg  %>% 
+  layout(xaxis = list(title = "Data"), yaxis = list(title = "Frequenza Parole"), plot_bgcolor = "#fff3e6", paper_bgcolor="#fff3e6")
+    })
+  },
+
+  options = list(height = 500, width= 900)
+)
+```
+</center>

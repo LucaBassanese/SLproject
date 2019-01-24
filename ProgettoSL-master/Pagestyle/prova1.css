@@ -1,0 +1,155 @@
+
+p {
+  background: #fff3e6;
+  /*margin-right: 75px;
+  margin-left: 75px*/
+  max-width: 900px !important;
+      margin-left: auto;
+      margin-right: auto;
+      font-family: 'Montserrat';
+      font-size: 150%;
+      line-height: 1.7;
+      padding-right: 15px;
+      padding-left: 15px;
+}
+
+
+h1.title {
+  font-size: 38px;
+  color: DarkBlue;
+  background: #fff3e6;
+  text-align: center;
+  font-family: "Times New Roman", Times, serif;
+   max-width: 900px !important;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.7;
+      padding-right: 15px;
+      padding-left: 15px;
+}
+
+h1 {
+	max-width: 900px !important;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.7;
+      padding-right: 15px;
+      padding-left: 15px;
+	text-align: center;
+	color: DarkBlue;
+}
+
+h2 {
+	max-width: 900px !important;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.7;
+      padding-right: 15px;
+      padding-left: 15px;
+	color: DarkBlue;
+}
+
+h3 {
+	max-width: 900px !important;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.7;
+      padding-right: 15px;
+      padding-left: 15px;
+	color: DarkBlue;
+}
+
+.tabset {
+	max-width: 900px !important;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.7;
+      padding-right: 15px;
+      padding-left: 15px;
+	text-align: center;
+	
+	
+}
+
+
+
+body {
+  background: #fff3e6; 
+}
+
+.container {
+  position: relative;
+  width: 100%;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  width: 100%;
+  opacity: 0;
+  transition: .5s ease;
+  background-color: #00aa00;
+}
+
+
+.container:hover .overlay {
+  opacity: 1;
+}
+
+.container-name div {
+    display: inline-block;
+	width: 500px;
+	min-height: 50px;
+	background-color: #eee;
+	height: auto;
+  }
+
+.text {
+  color: white;
+  font-size: 15px;
+  position: center;
+  top: 0%;
+  left: 0%;
+ /*transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%); */
+}
+.main-container {
+    max-width: 100% !important;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.mycontent{
+      max-width: 900px !important;
+      margin-left: auto;
+      margin-right: auto;
+      font-family: 'Montserrat';
+      font-size: 130%;
+      line-height: 1.7;
+      padding-right: 15px;
+      padding-left: 15px;
+}
+
+
+.mytitle{
+  text-transform: uppercase;
+  font-family: 'Montserrat';
+  font-size: 100%;
+  font-weight: 300;
+  letter-spacing: 4px;
+}
+
+.mysubtitle{
+  color:grey;
+  font-family: 'Montserrat';
+}

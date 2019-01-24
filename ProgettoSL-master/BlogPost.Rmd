@@ -1,0 +1,1179 @@
+---
+title: "<center><div class='mytitle'>2017/2018: La comunicazione dei politici italiani su twitter </div></center>"
+output:  
+   html_document:
+    
+    number_sections: false
+    toc: false
+    toc_float: false
+    theme: united
+    highlight: tango
+    css: prova1.css
+    includes: 
+        before_body: header.html
+author: "<center><div class='mysubtitle'>Robaskol: <a href= https://github.com/FatjonaBekollari> Fatjona Bekollari </a>, <a href= https://github.com/LucaBassanese> Luca Bassanese </a>, <a href= https://aongaro3.github.io> Andrea Ongaro </a> </div></center>"
+---
+
+<style>
+
+.img {
+width: 20px;
+heigth: 20px
+
+}
+
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## <img class="img" src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/twitter.png"> Politica: i social e la comunicazione. 
+
+&Egrave; sotto gli occhi di tutti, i social network sono ormai parte integrante della nostra vita e ciò è valido per chiunque di noi e per qualsiasi ambito. 
+
+La politica è stata travolta da questa ondata social in pieno, siamo in un'era in cui spesso i politici sono star del web. 
+Per loro la comunicazione tramite Twitter, Facebook e anche Instagram è diventata di fondamentale importanza per riuscire a fare presa su più persone possibili. Il che porta a porci delle domande: 
+
+<center>
+> Come comunicano davvero i politici italiani su Twitter? Questa comunicazione varia secondo il consenso elettorale del proprio partito? 
+
+</center>
+
+<center>
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center',fig.width=10}
+library(readr)
+library(dplyr)
+library(readxl)
+library(dygraphs)
+library(xts)
+library(gdata)
+library(httr)
+url1 <- "https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/Sondaggi.xlsx"
+a <- GET(url1, write_disk(tf <- tempfile(fileext = ".xlsx")))
+Sondaggi <- read_excel(tf)
+Sondaggi[which(Sondaggi$Data< "2018-01-01"),-c(1,2)] <- Sondaggi[which(Sondaggi$Data< "2018-01-01"),-c(1,2)]/100
+SWG <- Sondaggi[which(Sondaggi$Istituto %in% c("SWG","POLITICHE 2018")),]
+SWG <- SWG[order(SWG$Data),]
+
+library(plotly)
+hovertext1 <- paste0("Date:<b>", SWG$Data, "</b><br>",
+                     "Perc:<b>", SWG$PD*100, "%</b><br>")
+hovertext2 <- paste0("Date:<b>", SWG$Data, "</b><br>",
+                     "Perc:<b>", SWG$Lega*100, "%</b><br>")
+hovertext3 <- paste0("Date:<b>", SWG$Data, "</b><br>",
+                     "Perc:<b>", SWG$M5S*100, "%</b><br>")
+hovertext4 <- paste0("Date:<b>", SWG$Data, "</b><br>",
+                     "Perc:<b>", SWG$`Forza Italia`*100, "%</b><br>")
+hovertext5 <- paste0("Date:<b>", SWG$Data, "</b><br>",
+                     "Perc:<b>", SWG$FDI*100, "%</b><br>")
+hovertext6 <- paste0("Date:<b>", SWG$Data, "</b><br>",
+                     "Perc:<b>", SWG$LeU*100, "%</b><br>")
+p <- plot_ly(data=SWG, x = ~Data) %>% 
+  add_lines(y = ~PD, line = list(color = "#ff8080", width = 2),
+            hoverinfo = "text", text = hovertext1, name = "PD") %>% 
+  add_lines(y = ~Lega, line = list(color = "#009933", width = 2),
+            hoverinfo = "text", text = hovertext2, name = "Lega") %>% 
+  add_lines(y = ~M5S, line = list(color = "#ffcc00", width = 2),
+            hoverinfo = "text", text = hovertext3, name = "M5S") %>% 
+  add_lines(y = ~`Forza Italia`, line = list(color = "#66ccff", width = 2),
+            hoverinfo = "text", text = hovertext4, name = "FI") %>% 
+  add_lines(y = ~FDI, line = list(color = "#0000ff", width = 2),
+            hoverinfo = "text", text = hovertext5, name = "FDI") %>% 
+  add_lines(y = ~LeU, line = list(color = "#cc0000", width = 2),
+            hoverinfo = "text", text = hovertext6, name = "LeU") %>% 
+  add_markers(x = "2018-03-04",
+              y = 0.35,             
+              marker = list(size = 15, color = "#00526d"),
+              showlegend = F,name="Politiche") %>% 
+  add_text(x = "2018-03-04",
+           y = 0.35,
+           text = "<b>1</b>",
+           textfont = list(color = "white", size = 8),
+           showlegend = F) %>%
+  #add_lines(x="2018-03-04",y=(seq(0,0.35,by=0.05)),hoverinfo=F,line = list(color = "black", width = 2)
+   #         ,showlegend=F,hoverinfo="none") %>% 
+  add_markers(x = "2017-01-10",
+              y = 0.37,             
+              marker = list(size = 15, color = "#00526d"),
+              showlegend = F,name="Politiche") %>% 
+  add_text(x = "2017-01-10",
+           y = 0.37,
+           text = "<b>1</b>",
+           textfont = list(color = "white", size = 8),
+           showlegend = F) %>% 
+  layout(yaxis = list(title = "Percentuale di voto"),
+         #title="<b>Andamento sondaggi politici 2017-2018</b>",
+         annotations =   list(list(xref = "plot", yref = "plot", xanchor = "left", yanchor = "right",
+                             x = "2017-01-18", y = 0.37, showarrow = F,
+                             align = "left",
+                             text = "<b>Elezioni Politiche 2018</b>",
+                             font = list(size = 12, family = "Arial"),
+                             bgcolor = "white"),
+                               list(xref = "paper", yref = "paper", xanchor = "left", yanchor = "right",
+                                    x = 0, y = 1.05, showarrow = F,
+                                    text = "<b>Andamento sondaggi politici 2017-2018</b>",
+                                    font = list(size = 30, family = "Balto"))),
+         #paper_bgcolor= "#e6e6ff"
+         plot_bgcolor= "#fff3e6", paper_bgcolor= "#fff3e6"
+         ) 
+p
+```
+</center>
+
+Questa è l'evoluzione del consenso elettorale dei maggiori partiti italiani negli ultimi due anni. Da inizio 2017 fino al periodo delle politiche del 4 Marzo 2018, per quasi tutti i partiti si nota un trend costante. Dopo lo shock delle elezioni si evidenzia un cambiamento di direzione e intensità dei trend. 
+
+Sono stati considerati gli account Twitter delle figure politiche più importanti(approfondendo su quelli più influenti) e si sono analizzati i tweet da inizio 2017 fino a oggi cercando di capire come è cambiato il loro modo di comunicare. &Egrave; variato a seconda del consenso politico o di particolari eventi oppure è rimasto invariato? 
+
+## <img class="img" src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/twitter.png"> Twitter
+
+Di seguito si riportano i dati degli account twitter utilizzati nell'analisi. 
+
+<!--html_preserve-->
+<table>
+<tr>
+<th>
+<div class="container">
+  <img src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/Salvini.jpg" alt="Avatar" class="image">
+  <div class="overlay">
+  <div class="text">
+	Username: matteosalvinimi <br>
+	Followers: 942.671 <br>
+	Creato il: 23/03/2011 <br>
+	Tweet: 28.966
+	</div>
+  </div>
+</div>
+</th>
+<th> 
+<div class="container">
+  <img src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/Renzi.jpg" alt="Avatar" class="image">
+  <div class="overlay" style="background-color: #ff8888">
+  <div class="text">
+	Username: matteorenzi <br>
+	Followers: 3.358.010  <br>
+	Creato il: 08/01/2009 <br>
+	Tweet: 8.333
+	</div>
+  </div>
+</div>
+</th>
+<th>
+<div class="container">
+  <img src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/DiMaio.jpg" alt="Avatar" class="image">
+  <div class="overlay" style="background-color: #fde302">
+    <div class="text">
+	Username: luigidimaio <br>
+	Followers: 479.924 <br>
+	Creato il: 17/06/2009 <br>
+	Tweet: 5.101
+	</div>
+  </div>
+</div>
+</th>
+<th>
+<div class="container">
+  <img src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/Berlusconi.jpg" alt="Avatar" class="image">
+  <div class="overlay" style="background-color: #33ccff">
+    <div class="text">
+	Username: berlusconi <br>
+	Followers: 49.061 <br>
+	Creato il: 17/10/2017 <br>
+	Tweet: 2.179
+	</div>
+  </div>
+</div>
+</th>
+<th>
+<div class="container">
+  <img src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/Grillo.jpg" alt="avatar" class="image">
+  <div class="overlay" style="background-color: #fde302">
+    <div class="text">
+	Username: beppe_grillo <br>
+	Followers: 2.472.787 <br>
+	Creato il: 16/01/2009 <br>
+	Tweet: 75.949
+	</div>
+  </div>
+</div>
+</th>
+<th>
+<div class="container">
+  <img src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/Meloni.jpg" alt="Avatar" class="image">
+  <div class="overlay" style="background-color: #0099ff">
+    <div class="text">
+	Username: GiorgiaMeloni <br>
+	Followers: 728.699 <br>
+	Creato il: 07/04/2010 <br>
+	Tweet: 12.092
+	</div>
+  </div>
+</div>
+</th>
+<th>
+<div class="container">
+  <img src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/Martina.jpg" alt="Avatar" class="image">
+  <div class="overlay" style="background-color: #ff8888">
+    <div class="text">
+	Username: maumartina <br>
+	Followers: 221.774 <br>
+	Creato il: 18/11/2011 <br>
+	Tweet: 3.836
+	</div>
+  </div>
+</div>
+</th>
+<th>
+<div class="container">
+  <img src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/Grasso.jpg" alt="Avatar" class="image">
+  <div class="overlay" style="background-color: #e60000">
+    <div class="text">
+	Username: PietroGrasso <br>
+	Followers: 634.980 <br>
+	Creato il: 08/01/2013 <br>
+	Tweet: 1.849
+	</div>
+  </div>
+</div>
+</th>
+</tr>
+</table>
+<!--/html_preserve-->
+
+<br>
+
+Come si nota la comparsa dei vari personaggi politici è dilazionata nel tempo, addirittura il Cavaliere ha creato il suo account in vista delle elezioni, probabilmente per ampliare i suoi canali di comunicazioni allineandosì così ai suoi rivali. Inoltre emerge che il numero di follower non rispecchia esattamente le preferenze politiche degli italiani poichè l'utenza di twitter non è un campione rappresentativo della popolazione italiana.
+
+<br>
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.height=5}
+library(rtweet)
+library(twitteR)
+library(devtools)
+library("httr")
+library("base64enc")
+library(lubridate)
+library(dplyr)
+library(tidyverse)
+library(readr)
+library(tidytext)
+library(stringr)
+library(tokenizers)
+library(purrr)
+library(broom)
+library(plotly)
+library(tweenr)
+library(tm)
+#devtools::install_github('thomasp85/gganimate')
+library(gganimate)
+library(ggraph)
+library(igraph)
+library(widyr)
+
+Salvinifinale <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/Salvinifinaledef.csv")
+
+
+Grassotweets <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/Grassotweetsdef.csv")
+
+Melonitweets <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/Melonitweetsdef.csv")
+
+Martinatweets <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/Martinatweetsdef.csv")
+
+Grillotweets <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/Grillofinaledef.csv")
+
+DiMaiotweets <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/DiMaiotweetsdef.csv")
+
+Berlusconitweets <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/Berlusconitweetsdef.csv")
+
+MRenzitweets <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/MRenzitweetsdef.csv")
+
+Grillo <- Grillotweets %>%
+  filter(created_at > as.Date("2016-12-31"),created_at <= as.Date("2019-01-01"))
+
+Renzi <- MRenzitweets %>%
+  filter(created_at >= as.Date("2016-12-31"),created_at <= as.Date("2019-01-01"))
+
+Berlusconi <- Berlusconitweets %>% 
+  filter(created_at >= as.Date("2016-12-31"),created_at <= as.Date("2019-01-01"))
+
+DiMaio <- DiMaiotweets %>%
+  filter(created_at >= as.Date("2016-12-31"), created_at <= as.Date("2019-01-01"))
+
+Salvini <- Salvinifinale %>%
+  filter(created_at >= as.Date("2016-12-31"),created_at <= as.Date("2019-01-01"))
+
+Grasso <- Grassotweets %>%
+  filter(created_at >= as.Date("2016-12-31"),created_at <= as.Date("2019-01-01"))
+
+Meloni <- Melonitweets %>%
+  filter(created_at >= as.Date("2016-12-31"),created_at <= as.Date("2019-01-01"))
+
+Martina <- Martinatweets %>%
+  filter(created_at >= as.Date("2016-12-31"),created_at <= as.Date("2019-01-01"))
+
+Grillo$quoted_created_at <- Grillo$quoted_created_at %>% as.Date()
+Grillo$quoted_created_at <- Grillo$quoted_created_at %>% as.POSIXct()
+Grillo$quoted_favorite_count <- Grillo$quoted_favorite_count %>% as.integer()
+
+Grillo$quoted_retweet_count <- Grillo$quoted_retweet_count %>% as.integer()
+
+Grillo$quoted_followers_count <- Grillo$quoted_followers_count %>% as.integer()
+
+Grillo$quoted_friends_count <- Grillo$quoted_friends_count %>% as.integer()
+
+Grillo$quoted_statuses_count <- Grillo$quoted_statuses_count %>% as.integer()
+
+Grillo$quoted_verified <- Grillo$quoted_verified %>% as.logical()
+
+tweets <- bind_rows(DiMaio %>% 
+                      mutate(person = "DiMaio"),
+                    Berlusconi %>% 
+                      mutate(person = "Berlusconi"),
+                    Grasso %>% 
+                      mutate(person = "Grasso"),
+                    Grillo %>% 
+                      mutate(person = "Grillo"),
+                    Martina %>% 
+                      mutate(person = "Martina"),
+                    Meloni %>% 
+                      mutate(person = "Meloni"),
+                    Renzi %>% 
+                      mutate(person = "Renzi"),
+                    Salvini %>% 
+                      mutate(person = "Salvini"))
+
+
+ggplot(tweets, aes(x = created_at, fill = person)) +
+  geom_histogram(position = "identity", bins = 20, show.legend = FALSE) +
+  facet_wrap(~person, ncol = 2) + theme(panel.background = element_rect(fill = "#fff3e6"), plot.background = element_rect(fill = "#fff3e6")) + xlab("") + ylab("Numero di tweet")
+```
+
+Il grafico conferma le supposizioni su Berlusconi, dopo l'exploit del periodo elettorale il numero di tweet mensili si è decisamente ridotto. Per Renzi si nota il comportamento opposto, da quando è all'opposizione il suo utilizzo di Twitter è aumentato. Spiccano Grillo e Salvini.
+
+## <img class="img" src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/twitter.png"> Salvini, Di Maio, Renzi e Berlusconi  
+
+## { .tabset }
+### <img src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/Salvini.jpg" alt="Avatar", width="50" height="50">
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center'}
+number <- Salvini %>%
+  mutate(time_floor = floor_date(created_at, unit = "1 month")) %>%
+  count(time_floor, screen_name, text) %>%
+  group_by(screen_name, time_floor) %>% 
+  mutate(total = sum(n))
+
+p <- number %>% 
+  ggplot() + geom_histogram(aes(x=time_floor, y=n,text=total) ,stat="identity", fill= "#009933", col="#009933") + labs(x="Mesi", y= "Numero di tweet", title = "Salvini")
+
+ggplotly(p, tooltip = "text") %>% layout(plot_bgcolor= "#fff3e6", paper_bgcolor= "#fff3e6")
+
+```
+
+### <img src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/DiMaio.jpg" alt="Avatar", width="50" height="50">
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center'}
+number <- DiMaio %>%
+  mutate(time_floor = floor_date(created_at, unit = "1 month")) %>%
+  count(time_floor, screen_name, text) %>%
+  group_by(screen_name, time_floor) %>% 
+  mutate(total = sum(n))
+
+p <- number %>% 
+  ggplot() + geom_histogram(aes(x=time_floor, y=n, text=total),stat="identity", fill="#ffcc00", col="#ffcc00") + labs(x="Mesi", y= "Numero di tweet", title = "Di Maio")
+
+ggplotly(p, tooltip = "text") %>% layout(plot_bgcolor= "#fff3e6", paper_bgcolor= "#fff3e6")
+
+```
+
+### <img src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/Renzi.jpg" alt="Avatar", width="50" height="50">
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center'}
+number <- Renzi %>%
+  mutate(time_floor = floor_date(created_at, unit = "1 month")) %>%
+  count(time_floor, screen_name, text) %>%
+  group_by(screen_name, time_floor) %>% 
+  mutate(total = sum(n))
+
+p <- number %>% 
+  ggplot() + geom_histogram(aes(x=time_floor, y=n, text= total),stat="identity", fill="#ff8080", col="#ff8080") + labs(x="Mesi", y= "Numero di tweet", title = "Renzi")
+
+ggplotly(p, tooltip = "text") %>% layout(plot_bgcolor= "#fff3e6", paper_bgcolor= "#fff3e6")
+
+```
+
+### <img src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/Berlusconi.jpg" alt="Avatar", width="50" height="50">
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center'}
+number <- Berlusconi %>%
+  mutate(time_floor = floor_date(created_at, unit = "1 month")) %>%
+  count(time_floor, screen_name, text) %>%
+  group_by(screen_name, time_floor) %>% 
+  mutate(total = sum(n))
+
+p <- number %>% 
+  ggplot() + geom_histogram(aes(x=time_floor, y=n, text= total),stat="identity", fill="#66ccff", col="#66ccff") + labs(x="Mesi", y= "Numero di tweet", title = "Berlusconi")
+
+ggplotly(p, tooltip = "text") %>% layout(plot_bgcolor= "#fff3e6", paper_bgcolor= "#fff3e6")
+```
+
+##
+
+Nei due anni considerati questi quattro politici hanno avuto una differente evoluzione sia in termini di consenso elettorale che di ruolo istituzionale. Per Salvini e Di Maio, dopo le elezioni a loro favorevoli e la formazione del governo, è seguita un'evoluzione opposta dei loro voti: ad una crescita sostenuta del primo si è contrapposta una riduzione del secondo. Dall'altra parte Berlusconi e Renzi, che rappresentano oggi l'opposizione, hanno sofferto dell'erosione del loro consenso da parte dei partiti al potere.
+
+### Text mining 
+
+In quanto le elezioni rappresentano il turning point del panorama politico, un'analisi preliminare sulla comunicazione prevede la suddivisione delle parole più utilizzate in prima e dopo il 4 Marzo 2018.
+
+## { .tabset }
+
+### <img src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/Salvini.jpg" alt="Avatar", width="50" height="50">
+
+```{r, echo=FALSE,message=FALSE, warning=FALSE, fig.width=8, fig.height=5}
+library(wordcloud)
+stopwords <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/stopwords2.txt", 
+                       col_names = "words")
+par(bg="#fff3e6")
+remove_reg <- "&amp;|&lt;|&gt;"
+tweets <-  Salvini %>% 
+  filter(!str_detect(text, "^RT"), is_retweet == F) %>%
+  mutate(text = str_remove_all(text, remove_reg)) %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stopwords$words,
+         !word %in% str_remove_all(stopwords$words, "'"),
+         str_detect(word, "[a-z]"))
+
+
+pal <- brewer.pal(8,"Dark2")
+layout.matrix <- matrix(c(0 , 1, 0, 2), nrow = 2, ncol = 2)
+graphics::layout(mat = layout.matrix,
+                 heights = c(0, 5), # Heights of the two rows
+                 widths = c(2, 2.6)) # Widths of the two columns
+#par(mar=c(5,5,5,5))
+
+tweets %>%
+  filter(created_at <= "2018-03-04",!str_detect(word, "<u"),word != "#salvini") %>% 
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 75,colors = pal, random.color = F,random.order = F,rot.per=0.2 ,main="Title",scale = c(3.5,0.25)))
+
+title("PRIMA ELEZIONI", cex.main = 2, col.main="Darkblue", font.main = 2)
+tweets %>%
+  filter(created_at >= "2018-03-04",!str_detect(word, "<u"),word != "#salvini") %>% 
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 75,colors = pal, random.color = F,random.order = F,rot.per=0.2,scale = c(3.5,0.25)))
+title("DOPO ELEZIONI", cex.main = 2, col.main="Darkblue", font.main=2)
+
+
+
+par(mfrow= c(1,1))
+
+
+```
+
+Il focus di Salvini rimane sempre sugli Italiani, non si è verificato un cambiamento evidente, tranne per il fatto che sia diminuita la frequenza con cui cita i suoi avversari politici.
+
+### <img src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/DiMaio.jpg" alt="Avatar", width="50" height="50">
+
+```{r, echo=FALSE,message=FALSE, warning=FALSE, fig.width=8, fig.height=5}
+
+par(bg="#fff3e6")
+remove_reg <- "&amp;|&lt;|&gt;"
+tweets <-  DiMaio %>% 
+  filter(!str_detect(text, "^RT"), is_retweet == F) %>%
+  mutate(text = str_remove_all(text, remove_reg)) %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stopwords$words,
+         !word %in% str_remove_all(stopwords$words, "'"),
+         str_detect(word, "[a-z]"))
+
+layout.matrix <- matrix(c(0 , 1, 0, 2), nrow = 2, ncol = 2)
+graphics::layout(mat = layout.matrix,
+                 heights = c(0, 5), # Heights of the two rows
+                 widths = c(2, 2.6)) # Widths of the two columns
+
+tweets %>%
+  filter(created_at <= "2018-03-04",!str_detect(word, "<u")) %>% 
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 75,colors = pal, random.color = F,random.order = F,rot.per=0.2 ,main="Title",scale = c(3.5,0.25)))
+title("PRIMA ELEZIONI", cex.main = 2, col.main="Darkblue", font.main = 2)
+tweets %>%
+  filter(created_at >= "2018-03-04",!str_detect(word, "<u")) %>% 
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 75,colors = pal, random.color = F,random.order = F,rot.per=0.2 ,main="Title",scale = c(3.5,0.25)))
+title("DOPO ELEZIONI", cex.main = 2, col.main="Darkblue", font.main = 2)
+
+par(mfrow= c(1,1))
+
+```
+
+Subito si nota che l'attenzione di DiMaio si è spostata dai suoi avversari alla promozione del suo ruolo istituzionale.
+
+### <img src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/Renzi.jpg" alt="Avatar", width="50" height="50">
+
+```{r, echo=FALSE,message=FALSE, warning=FALSE, fig.width=8, fig.height=5}
+
+par(bg="#fff3e6")
+remove_reg <- "&amp;|&lt;|&gt;"
+tweets <-  Renzi %>% 
+  filter(!str_detect(text, "^RT"), is_retweet == F) %>%
+  mutate(text = str_remove_all(text, remove_reg)) %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stopwords$words,
+         !word %in% str_remove_all(stopwords$words, "'"),
+         str_detect(word, "[a-z]"))
+
+layout.matrix <- matrix(c(0 , 1, 0, 2), nrow = 2, ncol = 2)
+graphics::layout(mat = layout.matrix,
+                 heights = c(0, 5), # Heights of the two rows
+                 widths = c(2, 2.9)) # Widths of the two columns
+
+
+tweets %>%
+  filter(created_at <= "2018-03-04",!str_detect(word, "<u")) %>% 
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 75,colors = pal, random.color = F,random.order = F,rot.per=0.2 ,main="Title",scale = c(4,0.5)))
+title("PRIMA ELEZIONI", cex.main = 2, col.main="Darkblue", font.main = 2)
+tweets %>%
+  filter(created_at >= "2018-03-04",!str_detect(word, "<u")) %>% 
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 75,colors = pal, random.color = F,random.order = F,rot.per=0.2 ,main="Title",scale = c(3.5,0.25)))
+title("DOPO ELEZIONI", cex.main = 2, col.main="Darkblue", font.main = 2)
+
+par(mfrow= c(1,1))
+
+
+```
+
+Il cambiamento del linguaggio è netto, riflette il passaggio da essere il primo partito in Italia(e al governo) a far parte dell'opposizione. L'hashtag avanti era utilizzato per la promozione e il sostegno al suo gruppo politico. Dopo le elezioni l'attenzione si è spostata sull'attuale esecutivo.
+
+### <img src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/Berlusconi.jpg" alt="Avatar", width="50" height="50">
+
+```{r, echo=FALSE,message=FALSE, warning=FALSE, fig.width=8, fig.height=5}
+
+par(bg="#fff3e6")
+remove_reg <- "&amp;|&lt;|&gt;"
+tweets <-  Berlusconi %>% 
+  filter(!str_detect(text, "^RT"), is_retweet == F) %>%
+  mutate(text = str_remove_all(text, remove_reg)) %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stopwords$words,
+         !word %in% str_remove_all(stopwords$words, "'"),
+         str_detect(word, "[a-z]"))
+
+layout.matrix <- matrix(c(0 , 1, 0, 2), nrow = 2, ncol = 2)
+graphics::layout(mat = layout.matrix,
+                 heights = c(0, 5), # Heights of the two rows
+                 widths = c(2, 2.6)) # Widths of the two columns
+
+
+
+
+tweets %>%
+  filter(created_at <= "2018-03-04",!str_detect(word, "<u")) %>% 
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 75,colors = pal, random.color = F,random.order = F,rot.per=0.2 ,main="Title",scale = c(3.5,0.25)))
+title("PRIMA ELEZIONI", cex.main = 2, col.main="Darkblue", font.main = 2)
+tweets %>%
+  filter(created_at >= "2018-03-04",!str_detect(word, "<u")) %>% 
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 75,colors = pal, random.color = F,random.order = F,rot.per=0.2 ,main="Title",scale = c(4,0.5)))
+title("DOPO ELEZIONI", cex.main = 2, col.main="Darkblue", font.main = 2)
+
+par(mfrow= c(1,1))
+
+
+```
+
+Berlusconi non ha cambiato significativamente il linguaggio, ha sempre mantenuto un tono autopromozionale.
+
+##
+
+Al seguente<a href="https://aongaro3.shinyapps.io/UtilizzoParole/"> link <img class="img" src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/shiny.png"> </a> è possibile visualizzare l'andamento temporale di qualsiasi parola si voglia cercare.
+
+### Sentiment analysis
+
+La sentiment analysis permette di rilevare i sentimenti e le emozioni trasmesse da un input testuale, per ciò è particolarmente adatta ad analizzare dal punto di vista emotivo il modo di comunicare dei politici.
+
+### Salvini
+
+## {.tabset}
+
+### Statico
+
+```{r, echo=FALSE,message=FALSE, warning=FALSE, fig.width=10}
+library(stringr)
+library(lubridate)
+library(twitteR)
+library(httpuv)
+library(rtweet)
+library(devtools)
+library(rlang)
+library(lubridate)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(tidytext)
+library(fansi)
+library(gganimate)
+library(tweenr)
+library(gifski)
+library(png)
+library(plotly)
+
+dizsent <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/dizsent.csv", locale = locale(encoding = "ISO-8859-1"))[, -1]
+dizxml <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/dizxml.csv", locale = locale(encoding = "ISO-8859-1"))[, -1]
+diznrc <- read_csv("https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Dati/diznrc.csv", locale = locale(encoding = "ISO-8859-1"))[, -1]
+
+stopwords <- c("di", "a", "da", "in", "con", "su", "per", "tra", "fra", "un", "uno", "una", "uni", "a", "e", "i", "o", "u", "la", 
+               "li", "le", "lo", "gli", "dello", "dei", "della", "delle", "ai", "al", "allo", "alle", "il")
+stopwords <- data.frame(words = stopwords) %>% 
+  tbl_df()
+
+saltw <- Salvinifinale %>% 
+  filter(!str_detect(text, "^RT")) %>%
+  mutate(text = str_remove_all(text, remove_reg)) %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stopwords$words,
+         str_detect(word, "[a-z]")) %>% 
+  mutate(word = str_remove(word, "#")) %>% 
+  filter(is_retweet == FALSE) %>% 
+  subset( created_at >= "2017-01-01" & created_at <= "2018-12-31" ) %>% 
+  filter(!str_detect(word, "<u")) %>% 
+  filter(!str_detect(word,"^http"))
+
+veloce <-  function(parole, metodo) {
+  if (metodo == "xml"){
+  valori <- dizxml %>% filter(Lemma %in% parole )
+  a <- data.frame(Lemma = parole, ordine = 1:length(parole) ) %>% 
+    tbl_df()
+  neutri <- data.frame( Lemma = parole[parole %in% dizxml$Lemma == FALSE] %>% 
+                          unique(), score = 0, metodo = NA, polarity=NA, ID = NA, POS = NA) %>% 
+    tbl_df()
+  mer <- rbind(valori, neutri)
+  finito <- merge(a, mer, by = "Lemma") %>% 
+    tbl_df()
+  finito <- finito[order(finito$ordine), ]
+  
+  }
+  if (metodo == "sentix"){
+    valori <- dizsent %>% filter(Lemma %in% parole )
+    a <- data.frame(Lemma = parole, ordine = 1:length(parole) ) %>% 
+      tbl_df()
+    neutri <- data.frame( Lemma = parole[parole %in% dizsent$Lemma == FALSE] %>% 
+                            unique(), positivi = 0, negativi = 0, ID = NA, POS = NA, intensita = 0, polarity = 0) %>% 
+      tbl_df()
+    mer <- rbind(valori, neutri)
+    finito <- merge(a, mer, by = "Lemma") %>% 
+      tbl_df() 
+    finito <- finito[order(finito$ordine), ]
+  
+  }
+  if (metodo == "nrc"){
+  valori <- diznrc %>% filter(Lemma %in% parole )
+  a <- data.frame(Lemma = parole, ordine = 1:length(parole) ) %>% 
+    tbl_df()
+  neutri <- data.frame( Lemma = parole[parole %in% diznrc$Lemma == FALSE] %>% 
+                          unique(), positivi = 0, negativi = 0, anger = 0, anticipation = 0, disgust= 0, fear = 0, joy = 0, sadness = 0,
+                        surprise = 0, trust = 0, sentiment = "neutral") %>% 
+    tbl_df()
+  mer <- rbind(valori, neutri)
+  finito <- merge(a, mer, by = "Lemma") %>% 
+    tbl_df() 
+  finito <- finito[order(finito$ordine), ]
+  }
+  return(finito)
+}
+
+rissal <- veloce (saltw$word, metodo = "nrc") %>% 
+  cbind(saltw)
+
+sentimenti<-  rissal %>%  group_by(mesi = floor_date(created_at, "month")) %>% 
+  summarise( anger = sum(anger), anticipation = sum(anticipation), disgust = sum(disgust),
+                         fear = sum(fear), joy = sum(joy), sadness = sum(sadness), surprise = sum(surprise), trust = sum(trust),positive = sum(positivi),negative=sum(negativi))
+ciao <- apply(sentimenti[,-1], 1, t)
+colonne <- colSums(ciao)
+for (i  in 1:24) {
+  ciao [, i] <- ciao[, i] / colonne[i]
+  }
+finale <- data.frame( nomi = names(sentimenti)[-1], valori = as.vector(ciao), 
+                      tempo = rep(sentimenti$mesi, each = 10) %>% as.character(), stringsAsFactors = F)
+finale$tempo <- as.POSIXct(finale$tempo)
+
+finale %>% tbl_df() %>% 
+  ggplot(aes(x = tempo, y = valori,color=nomi)) +
+  geom_point() +
+  geom_smooth( )  +
+  facet_wrap(~ nomi, scale = "free_y", nrow = 2) +
+  theme_bw() + xlab("")+
+  theme(text = element_text(family = "Roboto Condensed"),
+        plot.title = element_text(face = "bold"),
+        legend.position = "none",
+        axis.text = element_text(size = 9),
+        legend.title = element_blank(),
+        panel.background = element_rect(fill = "#fff3e6"),
+        plot.background = element_rect(fill = "#fff3e6"),axis.text.x = element_text(angle = 90, hjust = 1)) 
+
+
+```
+
+### GIF
+
+```{r, echo=FALSE,message=FALSE, warning=FALSE, fig.width=10,cache=TRUE}
+gg1 <- ggplot(finale) +
+  geom_histogram(aes(x =nomi, y= valori, fill= nomi), stat = "identity")+
+  transition_states(states=tempo,
+                    transition_length = 1,
+                    state_length = 1)+
+  ease_aes('linear') +
+  labs(title="Mese: {closest_state}") + xlab("Sentimenti")+ theme(panel.background = element_rect(fill = "#fff3e6"),
+        plot.background = element_rect(fill = "#fff3e6"),legend.position = "none")
+
+animate(gg1,fps=30,duration = 32)
+
+```
+
+
+##
+
+In generale i sentimenti si sono modificati nel tempo, in particolare è evidente un picco durante il periodo delle elezioni. Alcuni sentimenti negativi(negative,fear) tendono a diminuire, mentre altri (disgust e sadness) seguono un andamento sinusoidale. Positive, trust e joy sono cresciute nei due anni presi in considerazione. Tutto ciò lascia supporre che la comunicazione di Salvini sia diventata meno aggressiva.
+
+### Di Maio
+
+## {.tabset}
+
+### Statico
+
+```{r, echo=FALSE,message=FALSE, warning=FALSE, fig.width=10}
+dimtw <- DiMaiotweets %>% 
+  filter(!str_detect(text, "^RT")) %>%
+  mutate(text = str_remove_all(text, remove_reg)) %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stopwords$words,
+         str_detect(word, "[a-z]")) %>% 
+  mutate(word = str_remove(word, "#")) %>% 
+  filter(is_retweet == FALSE) %>% 
+  subset( created_at >= "2017-01-01" & created_at <= "2018-12-31" ) %>% 
+  filter(!str_detect(word, "<u")) %>% 
+  filter(!str_detect(word,"^http"))
+
+risdim <- veloce (dimtw$word, metodo = "nrc") %>% 
+  cbind(dimtw)
+
+sentimenti<-  risdim %>%  group_by(mesi = floor_date(created_at, "month")) %>% 
+  summarise( anger = sum(anger), anticipation = sum(anticipation), disgust = sum(disgust),
+                         fear = sum(fear), joy = sum(joy), sadness = sum(sadness), surprise = sum(surprise), trust = sum(trust),positive = sum(positivi),negative=sum(negativi))
+ciao <- apply(sentimenti[,-1], 1, t)
+colonne <- colSums(ciao)
+for (i  in 1:24) {
+  ciao [, i] <- ciao[, i] / colonne[i]
+  }
+finale <- data.frame( nomi = names(sentimenti)[-1], valori = as.vector(ciao), 
+                      tempo = rep(sentimenti$mesi, each = 10) %>% as.character(), stringsAsFactors = F)
+finale$tempo <- as.POSIXct(finale$tempo)
+
+finale %>% tbl_df() %>% 
+  ggplot(aes(x = tempo, y = valori,color=nomi)) +
+  geom_point() +
+  geom_smooth( )  +
+  facet_wrap(~ nomi, scale = "free_y", nrow = 2) +
+  theme_bw() + xlab("")+
+  theme(text = element_text(family = "Roboto Condensed"),
+        plot.title = element_text(face = "bold"),
+        legend.position = "none",
+        axis.text = element_text(size = 9),
+        legend.title = element_blank(),
+        panel.background = element_rect(fill = "#fff3e6"),
+        plot.background = element_rect(fill = "#fff3e6"),axis.text.x = element_text(angle = 90, hjust = 1)) 
+
+
+```
+
+
+
+### GIF
+
+
+```{r, echo=FALSE,message=FALSE, warning=FALSE, fig.width=10,cache=TRUE}
+gg1 <- ggplot(finale) +
+  geom_histogram(aes(x =nomi, y= valori, fill= nomi), stat = "identity")+
+  transition_states(states=tempo,
+                    transition_length = 1,
+                    state_length = 1)+
+  ease_aes('linear') +
+  labs(title="Mese: {closest_state}") +xlab("Sentimenti")+ theme(panel.background = element_rect(fill = "#fff3e6"),
+        plot.background = element_rect(fill = "#fff3e6"),legend.position = "null")
+
+animate(gg1,fps=30,duration = 32)
+
+```
+
+##
+
+L'unico cambiamento, nel modo di comunicare di Di Maio, che sembra essere significativo è la diminuzione del sentimento negative.
+
+### Renzi
+
+## {.tabset}
+
+### Statico
+
+```{r, echo=FALSE,message=FALSE, warning=FALSE, fig.width=10}
+rentw <- MRenzitweets %>% 
+  filter(!str_detect(text, "^RT")) %>%
+  mutate(text = str_remove_all(text, remove_reg)) %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stopwords$words,
+         str_detect(word, "[a-z]")) %>% 
+  mutate(word = str_remove(word, "#")) %>% 
+  filter(is_retweet == FALSE) %>% 
+  subset( created_at >= "2017-01-01" & created_at <= "2018-12-31" ) %>% 
+  filter(!str_detect(word, "<u")) %>% 
+  filter(!str_detect(word,"^http"))
+
+risren <- veloce (rentw$word, metodo = "nrc") %>% 
+  cbind(rentw)
+
+sentimenti<-  risren %>%  group_by(mesi = floor_date(created_at, "month")) %>% 
+  summarise( anger = sum(anger), anticipation = sum(anticipation), disgust = sum(disgust),
+                         fear = sum(fear), joy = sum(joy), sadness = sum(sadness), surprise = sum(surprise), trust = sum(trust),positive = sum(positivi),negative=sum(negativi))
+ciao <- apply(sentimenti[,-1], 1, t)
+colonne <- colSums(ciao)
+for (i  in 1:24) {
+  ciao [, i] <- ciao[, i] / colonne[i]
+  }
+finale <- data.frame( nomi = names(sentimenti)[-1], valori = as.vector(ciao), 
+                      tempo = rep(sentimenti$mesi, each = 10) %>% as.character(), stringsAsFactors = F)
+finale$tempo <- as.POSIXct(finale$tempo)
+
+finale[-c(1:20),] %>% tbl_df() %>% 
+  ggplot(aes(x = tempo, y = valori,color=nomi)) +
+  geom_point() +
+  geom_smooth( )  +
+  facet_wrap(~ nomi, scale = "free_y", nrow = 2) +
+  theme_bw() + xlab("")+
+  theme(text = element_text(family = "Roboto Condensed"),
+        plot.title = element_text(face = "bold"),
+        legend.position = "none",
+        axis.text = element_text(size = 9),
+        legend.title = element_blank(),
+        panel.background = element_rect(fill = "#fff3e6"),
+        plot.background = element_rect(fill = "#fff3e6"),axis.text.x = element_text(angle = 90, hjust = 1)) 
+
+
+```
+
+
+
+### GIF
+
+```{r, echo=FALSE,message=FALSE, warning=FALSE, fig.width=10,cache=TRUE}
+gg1 <- ggplot(finale) +
+  geom_histogram(aes(x =nomi, y= valori, fill= nomi), stat = "identity")+
+  transition_states(states=tempo,
+                    transition_length = 1,
+                    state_length = 1)+
+  ease_aes('linear') +
+  labs(title="Mese: {closest_state}") + xlab("Sentimenti") + theme(panel.background = element_rect(fill = "#fff3e6"),
+        plot.background = element_rect(fill = "#fff3e6"),legend.position = "none")
+
+animate(gg1,fps=30,duration = 32)
+
+```
+
+##
+
+Nell'arco di tempo studiato il sentimento positive è preponderante nei tweet di Renzi. &Egrave; evidente però, un progressivo aumento dei sentimenti negativi, quali negative, sadness, anger e fear, a scapito del sentimento positive.
+
+
+### Berlusconi
+
+## {.tabset}
+
+### Statico
+
+```{r, echo=FALSE,message=FALSE, warning=FALSE, fig.width=10}
+bertw <- Berlusconitweets %>% 
+  filter(!str_detect(text, "^RT")) %>%
+  mutate(text = str_remove_all(text, remove_reg)) %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stopwords$words,
+         str_detect(word, "[a-z]")) %>% 
+  mutate(word = str_remove(word, "#")) %>% 
+  filter(is_retweet == FALSE) %>% 
+  subset( created_at >= "2017-01-01" & created_at <= "2018-12-31" ) %>% 
+  filter(!str_detect(word, "<u")) %>% 
+  filter(!str_detect(word,"^http"))
+
+risber <- veloce (bertw$word, metodo = "nrc") %>% 
+  cbind(bertw)
+
+sentimenti<-  risber %>%  group_by(mesi = floor_date(created_at, "month")) %>% 
+  summarise( anger = sum(anger), anticipation = sum(anticipation), disgust = sum(disgust),
+                         fear = sum(fear), joy = sum(joy), sadness = sum(sadness), surprise = sum(surprise), trust = sum(trust),positive = sum(positivi),negative=sum(negativi))
+ciao <- apply(sentimenti[,-1], 1, t)
+colonne <- colSums(ciao)
+for (i  in 1:ncol(ciao)) {
+  ciao [, i] <- ciao[, i] / colonne[i]
+  }
+finale <- data.frame( nomi = names(sentimenti)[-1], valori = as.vector(ciao), 
+                      tempo = rep(sentimenti$mesi, each = 10) %>% as.character(), stringsAsFactors = F)
+finale$tempo <- as.POSIXct(finale$tempo)
+
+finale %>% tbl_df() %>% 
+  ggplot(aes(x = tempo, y = valori,color=nomi)) +
+  geom_point() +
+  geom_smooth( )  +
+  facet_wrap(~ nomi, scale = "free_y", nrow = 2) +
+  theme_bw() + xlab("")+
+  theme(text = element_text(family = "Roboto Condensed"),
+        plot.title = element_text(face = "bold"),
+        legend.position = "none",
+        axis.text = element_text(size = 9),
+        legend.title = element_blank(),
+        panel.background = element_rect(fill = "#fff3e6"),
+        plot.background = element_rect(fill = "#fff3e6"),axis.text.x = element_text(angle = 90, hjust = 1)) 
+
+
+```
+
+
+### GIF
+
+```{r, echo=FALSE,message=FALSE, warning=FALSE, fig.width=10, cache=TRUE}
+gg1 <- ggplot(finale) +
+  geom_histogram(aes(x =nomi, y= valori, fill= nomi), stat = "identity")+
+  transition_states(states=tempo,
+                    transition_length = 1,
+                    state_length = 1)+
+  ease_aes('linear') +
+  labs(title="Mese: {closest_state}") + xlab("Sentimenti")+ theme(panel.background = element_rect(fill = "#fff3e6"),
+        plot.background = element_rect(fill = "#fff3e6"), legend.position = "none")
+
+animate(gg1,fps=30,duration = 20)
+
+```
+
+##
+
+A seguito dei risultati politici, in cui la sua coalizione è risultata essere la più votata sebbene il suo personale partito abbia sottoperformato, si registrano picchi nei sentimenti positivi, in special modo trust, che vanno però via via scemando in seguito all'esclusione di Forza Italia dal governo.  
+
+
+
+## <img class="img" src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/twitter.png"> Confronto 
+
+Il confronto finale, fra tutti i politici, si è basato sulla sentiment analysis in quanto strumento più generale al fine di valutare il cambiamento della comunicazione. Per fare ciò sono stati utilizzati due valori: polarità e intensità. Polarità varia tra -1(totalmente negativo) e 1(totalmente positivo). Intensità varia tra 0(totalmente neutrale) e 1 (totalmente polarizzato).
+
+## {.tabset}
+
+### Polarità
+
+```{r, echo=FALSE,message=FALSE, warning=FALSE, fig.width=10}
+
+#####tokenizzare####
+stopwords <- c("di", "a", "da", "in", "con", "su", "per", "tra", "fra", "un", "uno", "una", "uni", "a", "e", "i", "o", "u", "la", 
+               "li", "le", "lo", "gli", "dello", "dei", "della", "delle", "ai", "al", "allo", "alle", "il")
+stopwords <- data.frame(words = stopwords) %>% 
+  tbl_df()
+
+remove_reg <- "&amp;|&lt;|&gt;"
+rentw <- MRenzitweets %>% 
+  filter(!str_detect(text, "^RT")) %>%
+  mutate(text = str_remove_all(text, remove_reg)) %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stopwords$words,
+         str_detect(word, "[a-z]")) %>% 
+  mutate(word = str_remove(word, "#")) %>% 
+  filter(is_retweet == FALSE) %>% 
+  subset( created_at >= "2017-01-01" & created_at <= "2018-12-31" ) %>% 
+  filter(!str_detect(word, "<u")) %>% 
+  filter(!str_detect(word,"^http"))
+
+dimtw <- DiMaiotweets %>% 
+  filter(!str_detect(text, "^RT")) %>%
+  mutate(text = str_remove_all(text, remove_reg)) %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stopwords$words,
+         str_detect(word, "[a-z]")) %>% 
+  mutate(word = str_remove(word, "#")) %>% 
+  filter(is_retweet == FALSE) %>% 
+  subset( created_at >= "2017-01-01" & created_at <= "2018-12-31" ) %>% 
+  filter(!str_detect(word, "<u")) %>% 
+  filter(!str_detect(word,"^http"))
+
+saltw <- Salvinifinale %>% 
+  filter(!str_detect(text, "^RT")) %>%
+  mutate(text = str_remove_all(text, remove_reg)) %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stopwords$words,
+         str_detect(word, "[a-z]")) %>% 
+  mutate(word = str_remove(word, "#")) %>% 
+  filter(is_retweet == FALSE) %>% 
+  subset( created_at >= "2017-01-01" & created_at <= "2018-12-31" ) %>% 
+  filter(!str_detect(word, "<u")) %>% 
+  filter(!str_detect(word,"^http"))
+
+bertw <- Berlusconitweets %>% 
+  filter(!str_detect(text, "^RT")) %>%
+  mutate(text = str_remove_all(text, remove_reg)) %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stopwords$words,
+         str_detect(word, "[a-z]")) %>% 
+  mutate(word = str_remove(word, "#")) %>% 
+  filter(is_retweet == FALSE) %>% 
+  subset( created_at >= "2017-01-01" & created_at <= "2018-12-31" ) %>% 
+  filter(!str_detect(word, "<u")) %>% 
+  filter(!str_detect(word,"^http"))
+
+gratw <- Grassotweets %>% 
+  filter(!str_detect(text, "^RT")) %>%
+  mutate(text = str_remove_all(text, remove_reg)) %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stopwords$words,
+         str_detect(word, "[a-z]")) %>% 
+  mutate(word = str_remove(word, "#")) %>% 
+  filter(is_retweet == FALSE) %>% 
+  subset( created_at >= "2017-01-01" & created_at <= "2018-12-31" ) %>% 
+  filter(!str_detect(word, "<u")) %>% 
+  filter(!str_detect(word,"^http"))
+
+gritw <- Grillotweets %>% 
+  filter(!str_detect(text, "^RT")) %>%
+  mutate(text = str_remove_all(text, remove_reg)) %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stopwords$words,
+         str_detect(word, "[a-z]")) %>% 
+  mutate(word = str_remove(word, "#")) %>% 
+  filter(is_retweet == FALSE) %>% 
+  subset( created_at >= "2017-01-01" & created_at <= "2018-12-31" ) %>% 
+  filter(!str_detect(word, "<u")) %>% 
+  filter(!str_detect(word,"^http"))
+
+martw <- Martinatweets %>% 
+  filter(!str_detect(text, "^RT")) %>%
+  mutate(text = str_remove_all(text, remove_reg)) %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stopwords$words,
+         str_detect(word, "[a-z]")) %>% 
+  mutate(word = str_remove(word, "#")) %>% 
+  filter(is_retweet == FALSE) %>% 
+  subset( created_at >= "2017-01-01" & created_at <= "2018-12-31" ) %>% 
+  filter(!str_detect(word, "<u")) %>% 
+  filter(!str_detect(word,"^http"))
+
+meltw <- Melonitweets %>% 
+  filter(!str_detect(text, "^RT")) %>%
+  mutate(text = str_remove_all(text, remove_reg)) %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stopwords$words,
+         str_detect(word, "[a-z]")) %>% 
+  mutate(word = str_remove(word, "#")) %>% 
+  filter(is_retweet == FALSE) %>% 
+  subset( created_at >= "2017-01-01" & created_at <= "2018-12-31" ) %>% 
+  filter(!str_detect(word, "<u")) %>% 
+  filter(!str_detect(word,"^http"))
+
+risrenz <- veloce(rentw$word, metodo = "sentix") %>% 
+  cbind(rentw)
+risdim <- veloce(dimtw$word, metodo = "sentix") %>% 
+  cbind(dimtw)
+rissal <- veloce (saltw$word, metodo = "sentix") %>% 
+  cbind(saltw)
+risber <- veloce (bertw$word, metodo = "sentix") %>% 
+  cbind(bertw)
+risgra <- veloce (gratw$word, metodo = "sentix") %>% 
+  cbind(gratw)
+risgri <- veloce (gritw$word, metodo = "sentix") %>% 
+  cbind(gritw)
+rismar <- veloce (martw$word, metodo = "sentix") %>% 
+  cbind(martw)
+rismel <- veloce (meltw$word, metodo = "sentix") %>% 
+  cbind(meltw)
+
+
+# graf1 <- cbind(risrenz, rentw)
+# graf2 <- cbind(risdim, dimtw)
+# graf3 <- cbind(rissal, saltw)
+
+
+grafren <- risrenz %>% group_by(mesi = floor_date(created_at, "month")) %>% 
+  summarise(polarity = mean(polarity), positivi = mean(positivi), negativi = mean(negativi), intensita = mean(intensita)) 
+grafdim <- risdim %>% group_by(mesi = floor_date(created_at, "month")) %>% 
+  summarise(polarity = mean(polarity), positivi = mean(positivi), negativi = mean(negativi), intensita = mean(intensita)) 
+grafsal <- rissal %>% group_by(mesi = floor_date(created_at, "month")) %>% 
+  summarise(polarity = mean(polarity), positivi = mean(positivi), negativi = mean(negativi), intensita = mean(intensita)) 
+grafber <- risber %>% group_by(mesi = floor_date(created_at, "month")) %>% 
+  summarise(polarity = mean(polarity), positivi = mean(positivi), negativi = mean(negativi), intensita = mean(intensita)) 
+grafgra <- risgra %>% group_by(mesi = floor_date(created_at, "month")) %>% 
+  summarise(polarity = mean(polarity), positivi = mean(positivi), negativi = mean(negativi), intensita = mean(intensita)) 
+grafgri <- risgri %>% group_by(mesi = floor_date(created_at, "month")) %>% 
+  summarise(polarity = mean(polarity), positivi = mean(positivi), negativi = mean(negativi), intensita = mean(intensita)) 
+grafmar <- rismar %>% group_by(mesi = floor_date(created_at, "month")) %>% 
+  summarise(polarity = mean(polarity), positivi = mean(positivi), negativi = mean(negativi), intensita = mean(intensita)) 
+grafmel <- rismel %>% group_by(mesi = floor_date(created_at, "month")) %>% 
+  summarise(polarity = mean(polarity), positivi = mean(positivi), negativi = mean(negativi), intensita = mean(intensita)) 
+
+a <- data.frame(mesi = grafren$mesi[grafren$mesi %in% grafber$mesi == FALSE ], polarity = 0, positivi = 0, negativi = 0, intensita = 0) %>% 
+  tbl_df()
+grafber <- grafber %>% rbind(a)
+grafber <- grafber[order(grafber$mesi), ]
+
+grafico <- merge(grafren, grafdim,  by = "mesi") %>% 
+  merge(grafsal, by = "mesi") %>% 
+  merge(grafber, by = "mesi") %>% 
+  merge(grafgra, by = "mesi") %>% 
+  merge(grafgri, by = "mesi") %>% 
+  merge(grafmar, by = "mesi") %>% 
+  merge(grafmel, by = "mesi") 
+
+
+names(grafico) <- c("settimane", "polre", "posre", "negre", "intre", "poldi", "posdi", "negdi", "intdi", "polsa", "possa", "negsa", "intsa",
+                    "polbe", "posbe", "negbe", "intbe", "polgra", "posgra", "neggra", "intgra", "polgri", "posgri", "neggri", "intgri",
+                    "polma", "posma", "negma", "intma", "polme", "posme", "negme", "intme")
+
+plot_ly(grafico, x = ~settimane, y = ~polgri, name="Grillo",
+        type = "scatter", mode = "lines", line = list(color = "#ac8a00")) %>%
+  add_trace(y= ~ poldi, name="Dimaio", type = "scatter",selected=F, line = list(color = "#ffcc00"),visible = "legendonly") %>%
+  add_trace(y = ~ polsa, name = "Salvini", type = "scatter", selected = F, line = list(color = "#009933"),visible = "legendonly") %>% 
+  add_trace(y = ~ polbe, name = "Berlusconi", type = "scatter", selected = F, line = list(color = "#66ccff"),visible = "legendonly") %>% 
+  add_trace(y = ~ polre, name = "Renzi", type = "scatter", selected = F, line = list(color = "#ff8080"),visible = "legendonly") %>% 
+  add_trace(y = ~ polgra, name = "Grasso", type = "scatter", selected = F, line = list(color = "#cc0000")) %>% 
+  add_trace(y = ~ polma, name = "Martina", type = "scatter", selected = F, line = list(color = "#ffb3b3")) %>% 
+  add_trace(y = ~ polme, name = "Meloni", type = "scatter", selected = F, line = list(color = "#0000ff")) %>% 
+  layout(xaxis = list(title = "Data"), yaxis = list(title = "Valore"),  title = "Polarità", plot_bgcolor = "#fff3e6", paper_bgcolor="#fff3e6")
+
+```
+
+
+### Intensità
+
+```{r, echo=FALSE,message=FALSE, warning=FALSE, fig.width=10}
+
+plot_ly(grafico, x = ~settimane, y = ~intgri, name="Grillo",
+        type = "scatter", mode = "lines", line = list(color = "#ac8a00")) %>%
+  add_trace(y= ~ intdi, name="Dimaio", type = "scatter",selected=F, line = list(color = "#ffcc00"),visible = "legendonly") %>%
+  add_trace(y = ~ intsa, name = "Salvini", type = "scatter", selected = F, line = list(color = "#009933"),visible = "legendonly") %>% 
+  add_trace(y = ~ intbe, name = "Berlusconi", type = "scatter", selected = F, line = list(color = "#66ccff"),visible = "legendonly") %>% 
+  add_trace(y = ~ intre, name = "Renzi", type = "scatter", selected = F, line = list(color = "#ff8080"),visible = "legendonly") %>% 
+  add_trace(y = ~ intgra, name = "Grasso", type = "scatter", selected = F, line = list(color = "#cc0000")) %>% 
+  add_trace(y = ~ intma, name = "Martina", type = "scatter", selected = F, line = list(color = "#ffb3b3")) %>% 
+  add_trace(y = ~ intme, name = "Meloni", type = "scatter", selected = F, line = list(color = "#0000ff")) %>% 
+  layout(xaxis = list(title = "Data"), yaxis = list(title = "Valore"),  title = "Intensità", plot_bgcolor = "#fff3e6", paper_bgcolor="#fff3e6")
+
+
+
+
+```
+
+
+##
+
+Dando un'occhiata ai politici rimanenti: Giorgia Meloni si attesta su un range lievemente positivo che è poco variabile nel tempo. Di contro, Grasso, presenta una polarità molto variabile. Grillo si discosta da tutti gli altri per argomenti trattati, nei suoi numerosi tweet non tratta esclusivamente di politica italiana, il che porta il suo sentiment a non essere influenzato dagli eventi politici. Infine, Martina, segue un comportamento simile a quello di Renzi, positivo quando il PD era al governo e durante la campagna elettorale, ma con una visibile diminuzione nel periodo successivo alle elezioni. 
+L'unico shock evidente che accomuna tutti i politici(eccetto Renzi) è ad Agosto 2017. Probabilmente la diminuzione improvvisa di polarità è dovuta al fatto che in questo periodo si è verificato un attentato a Barcellona.
+
+## <img class="img" src="https://raw.githubusercontent.com/AOngaro3/ProgettoSL/master/Immagini/twitter.png"> Conclusioni
+
+L'utilizzo congiunto di text mining e sentiment analysis ha rivelato uno schema principale. Il cambiamento nella comunicazione, più che seguire fedelmente il consenso elettorale del partito di appartenenza, avviene in risposta alla variazione del ruolo istuzionale del politico preso in considerazione(principalmente il passaggio da governo a opposizione e viceversa).
+Sentiment analysis,pur non essendo ancora perfezionata, soprattutto per la lingua italiana, è riuscita a cogliere un'evoluzione nei "sentimenti" esternati dai politici italiani su twitter, intuendo l'adattamento del loro linguaggio alla loro situazione politica.
+Questo studio può essere ulteriormente sviluppato tramite, ad esempio, lo studio approfondito delle serie storiche da esso esposte.
+
+
+
+
